@@ -6,15 +6,20 @@ require 'sinatra'
 require 'pony'
 require 'sqlite3'
 
+def get_db
+  return SQLite3::Database.new 'barbershop.db'
+end
+
 configure do
-  @db = SQLite3::Database.new 'barbershop.db'
-  @db.execute 'CREATE TABLE IF NOT EXISTS
+  db = get_db
+  db.execute 'CREATE TABLE IF NOT EXISTS
     "Users"
     (
       "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-      "username" TEXT
+      "username" TEXT,
       "phone" TEXT,
-      "barber" TEXT
+      "datestamp" TEXT,
+      "barber" TEXT,
       "color" TEXT
     )'
 end
@@ -87,9 +92,9 @@ post '/visit' do
     @error = err
     return erb :visit
   else
-    f = File.open './public/users.txt', 'a'
-    f.write "#{@username} записан к мастеру #{@barber}, на следующую дату/время: #{@date_time}. Цвет окрашивания #{@color}. Телефон клиента: #{@phone} <br>\n"
-    f.close
+    db = get_db
+    db.execute 'INSERT INTO Users
+      (username, phone, datestamp, barber, color) VALUES (?, ?, ?, ?, ?)', [@username, @phone, @date_time, @barber, @color]
 
     @title = "Спасибо!"
     @message = "Уважаемый(-ая) #{@username}, вы записались к нам в Barber Shop на следующую дату и время: #{@date_time}. Вы выбрали цвет окрашивания #{@color}. Вас будет обслуживать мастер: #{@barber}. До встречи!"
@@ -153,4 +158,3 @@ post '/admin' do
 
   erb :message
 end
-
