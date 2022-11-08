@@ -11,6 +11,11 @@ def get_db
   return db
 end
 
+before do
+  db = get_db
+  @barbers = db.execute 'select * from Barbers'
+end
+
 def is_barber_exists? db, name
   db.execute('select * from Barbers where barbername=?', [name]).length > 0
 end
@@ -82,9 +87,6 @@ get '/about' do
 end
 
 get '/visit' do
-  db = get_db
-  @barbers = db.execute 'select * from Barbers'
-
   erb :visit
 end
 

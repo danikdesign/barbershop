@@ -28,7 +28,7 @@
     <label for="exampleFormControlSelect1">Выберите мастера:</label>
     <select class="form-control" name="barber" id="exampleFormControlSelect1">
       <% @barbers.each do |row| %>
-        <option><%= row['barbername'] %></option>
+        <option <%= @barber == row['barbername'] ? "selected" : '' %>><%= row['barbername'] %></option>
       <% end %>
     </select>
   </div>
