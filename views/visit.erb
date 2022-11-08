@@ -26,10 +26,10 @@
 
   <div class="form-group">
     <label for="exampleFormControlSelect1">Выберите мастера:</label>
-    <select class="form-control" name="master" id="exampleFormControlSelect1">
-      <option <%= @barber == 'Walter White' ? 'selected' : '' %>>Walter White</option>
-      <option <%= @barber == 'Jessie Pinkman' ? 'selected' : '' %>>Jessie Pinkman</option>
-      <option <%= @barber == 'Gus Fring' ? 'selected' : '' %>>Gus Fring</option>
+    <select class="form-control" name="barber" id="exampleFormControlSelect1">
+      <% @barbers.each do |row| %>
+        <option><%= row['barbername'] %></option>
+      <% end %>
     </select>
   </div>
 

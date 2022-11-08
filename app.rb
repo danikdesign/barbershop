@@ -82,6 +82,9 @@ get '/about' do
 end
 
 get '/visit' do
+  db = get_db
+  @barbers = db.execute 'select * from Barbers'
+
   erb :visit
 end
 
@@ -89,7 +92,7 @@ post '/visit' do
   @username = params[:username]
   @phone = params[:phone]
   @date_time = params[:date_time]
-  @barber = params[:master]
+  @barber = params[:barber]
   @color = params[:color]
 
   hh = { :username => 'Вы не ввели имя',
