@@ -76,7 +76,7 @@ post '/login' do
     redirect to where_user_came_from
 
   else
-    @denied = 'Неправильно введён логин и (или) пароль! Попробуйте ещё...'
+    @error = 'Неправильно введён логин и (или) пароль! Попробуйте ещё...'
     erb :login_form
   end
 
