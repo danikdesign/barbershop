@@ -3,11 +3,12 @@ Encoding.default_internal = Encoding::UTF_8
 
 require 'rubygems'
 require 'sinatra'
-require 'pony'
 require 'sqlite3'
 
 def get_db
-  return SQLite3::Database.new 'barbershop.db'
+  db = SQLite3::Database.new 'barbershop.db'
+  db.results_as_hash = true
+  return db
 end
 
 configure do
@@ -21,36 +22,43 @@ configure do
       "datestamp" TEXT,
       "barber" TEXT,
       "color" TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS
+    "Barbers"
+    (
+      "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+      "barbername" TEXT
     )'
+  db.execute 'CREATE TABLE IF NOT EXISTS
+  "Contacts"
+  (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "email" TEXT,
+    "message" TEXT
+  )'
+  db.execute 'CREATE TABLE IF NOT EXISTS
+  "Barbers"
+  (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "barbername" TEXT
+  )'
+
 end
 
 configure do
   enable :sessions
 end
 
-helpers do
-  def username
-    session[:identity] ? session[:identity] : 'Гость '
-  end
-end
-
-before '/admin' do
-  unless session[:identity]
-    session[:previous_url] = request.path
-    @error = 'Извините, вам нужно авторизоваться ' + request.path
-    halt erb(:login_form)
-  end
-end
-
 get '/' do
   erb :home
 end
 
-get '/login/form' do
+get '/login' do
   erb :login_form
 end
 
-post '/login/attempt' do
+post '/login' do
   @login = params['login']
   @password = params['password']
 
@@ -112,7 +120,9 @@ post '/contacts' do
   @email = params[:email]
   @text = params[:text]
 
-  hh = { :email => 'Вы не ввели email', :text => 'Вы ничего не написали в своём сообщении' }
+  hh = { :email => 'Вы не ввели email!',
+         :text => 'Вы не ввели сообщение!' }
+
   err = hh.select { |key,_| params[key] == ''}.values.join(',')
 
   if err != ''
@@ -121,10 +131,8 @@ post '/contacts' do
     return erb :contacts
 
   else
-
-      f = File.open './public/contacts.txt', 'a'
-      f.write "Электронный адрес клиента:<br>\n#{@email}<br>\n Сообщение:<br>\n#{@text} <br>\n==============================<br>\n<br>\n"
-      f.close
+    db = get_db
+    db.execute 'INSERT INTO Contacts (email, message) VALUES (?, ?)', [@email, @text]
 
       @title = "Спасибо за обращение!"
       @message = "Наша служба поддержки обязательно свяжется с вами по указанному адресу: #{@email}"
@@ -143,18 +151,10 @@ get '/admin' do
   erb :admin
 end
 
-post '/admin' do
-  @datatype = params['datatype']
-  @title = "#{@datatype}"
+get '/showusers' do
+  db = get_db
 
-  if @datatype == "Записи в Barber Shop"
-    @message = File.read './public/users.txt'
+  @results = db.execute 'select * from Users order by id desc'
 
-  elsif @datatype == "Обращения клиентов"
-    @message = File.read './public/contacts.txt'
-  else
-    raise "Мы не нашли информацию по вашему запросу :'("
-  end
-
-  erb :message
+  erb :showusers
 end

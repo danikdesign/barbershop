@@ -1,5 +1,5 @@
-<div class="alert alert-error"><%= @denied %></div>
-<form action='/login/attempt' method='post' class="form-inline well">
+<div class="alert alert-alert"><%= @denied %></div>
+<form action='/login' method='post' class="form-inline well">
   <input type="text" name="login" placeholder="username" autofocus>
   <input type="password" name="password" placeholder="password" autofocus>
   <input class="btn primary" type="submit" value="log in">
